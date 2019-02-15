@@ -37,16 +37,15 @@ curl -LO https://storage.googleapis.com/minikube/releases/latest/docker-machine-
   && sudo install docker-machine-driver-kvm2 /usr/local/bin/
 ```
 
-NOTE: Ubuntu users on a release older than 18.04, or anyone experiencing [#3206: Error creating new host: dial tcp: missing address.](https://github.com/kubernetes/minikube/issues/3206) you will need to build your own driver until [#3689](https://github.com/kubernetes/minikube/issues/3689) is resolved. Building this binary will require [Go v1.11](https://golang.org/dl/) or newer to be installed. 
+NOTE: Ubuntu users on a release older than 18.04, or anyone experiencing [#3206: Error creating new host: dial tcp: missing address.](https://github.com/kubernetes/minikube/issues/3206) you will need to build your own driver until [#3689](https://github.com/kubernetes/minikube/issues/3689) is resolved:
 
 ```
 sudo apt install libvirt-dev
 test -d $HOME/go/src/k8s.io/minikube || \
-  git clone https://github.com/kubernetes/minikube.git $HOME/go/src/k8s.io/minikube
+  git clone https://github.com/kubernetes/minikube.git $HOME/go/src/k8s.io/minikube |
 cd $HOME/go/src/k8s.io/minikube
 git pull
-make out/docker-machine-driver-kvm2
-install out/docker-machine-driver-kvm2 /usr/local/bin
+make install-kvm
 ```
 
 To use the driver:
@@ -86,11 +85,23 @@ If you are using [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) in you
 
 *Note: If `dnsmasq.conf` contains `listen-address=127.0.0.1` kubernetes discovers dns at 127.0.0.1:53 and tries to use it using bridge ip address, but dnsmasq replies only to requests from 127.0.0.1*
 
+To use the driver:
+
+```shell
+minikube start --vm-driver hyperkit
+```
+
 #### HyperV driver
 
 Hyper-v users may need to create a new external network switch as described [here](https://docs.docker.com/machine/drivers/hyper-v/). This step may prevent a problem in which `minikube start` hangs indefinitely, unable to ssh into the minikube virtual machine. In this add, add the `--hyperv-virtual-switch=switch-name` argument to the `minikube start` command.
 
 On some machines, having **dynamic memory management** turned on for the minikube VM can cause problems of unexpected and random restarts which manifests itself in simply losing the connection to the cluster, after which `minikube status` would simply state `stopped`. Machine restarts are caused due to following Hyper-V error: `The dynamic memory balancer could not add memory to the virtual machine 'minikube' because its configured maximum has been reached`. **Solution**: turned the dynamic memory management in hyper-v settings off (and allocate a fixed amount of memory to the machine).
+
+To use the driver:
+
+```shell
+minikube start --vm-driver hyperv --hyperv-virtual-switch=switch-name
+```
 
 #### VMware unified driver
 
@@ -114,7 +125,7 @@ export LATEST_VERSION=$(curl -L -s -H 'Accept: application/json' https://github.
 && mv docker-machine-driver-vmware /usr/local/bin/
 ```
 
-To use the driver you would do:
+To use the driver:
 
 ```shell
 minikube start --vm-driver vmware
